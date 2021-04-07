@@ -1,1 +1,0 @@
-# SKF-visual-studio-plugin
