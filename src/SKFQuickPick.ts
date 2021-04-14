@@ -1,57 +1,86 @@
-import { SnippetString, window } from "vscode";
-import { ChecklistCategory, ChecklistType } from "./QuickPickItems";
-import { SecurityKnowledgeFrameworkAPI } from "./SecurityKnowledgeFrameworkAPI";
+/* eslint-disable max-len */
+import {ChecklistCategory, ChecklistType} from './QuickPickItems';
+import {SnippetString, TextEditor, window} from 'vscode';
+import {FetchSKF} from './FetchSKF';
 
-class SKFQuickPick {
-    private _skf: SecurityKnowledgeFrameworkAPI;
-    // private static _categories: Promise<ChecklistCategory[]> = [];
-    // private static _types: ChecklistType[] = []
-
+/**
+ * Class that represents a QuickPick.
+ * Fetches data from ./FetchSKF and shows as selection list in window.ShowQuickPick()
+ */
+export class SKFQuickPick {
+    private _skf: FetchSKF;
+    /**
+     *
+     */
     constructor() {
-        this._skf = new SecurityKnowledgeFrameworkAPI('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySWQiOjYyODQ5OSwiaWF0IjoxNjE3NTQyMzUyLCJwcml2aWxlZ2UiOiJlZGl0OnJlYWQiLCJleHAiOjE2MTc1NDk1NTJ9.Ga7WqblSfgo6k2Ae5fDGRtpJRd6z9LP1O3ng18ltKdY')
-        
-        // this.CategoriesQuickPick()
-        //     // .then(results => console.log(results))
-    }
-
-    async categoriesQuickPick() {
-        const items: ChecklistCategory[] = [];
-
-        for (const item of await this._skf.getChecklistCategories()) {
-            items.push(new ChecklistCategory(item.id, item.name, item.description))
-        }
-
-        Promise.all(items)
-            .then(items => window.showQuickPick(items))
-            .then(category => this.getTypesFromCategoryById(category!.id))
+      this._skf = new FetchSKF('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySWQiOjYyODQ5OSwiaWF0IjoxNjE3NTQyMzUyLCJwcml2aWxlZ2UiOiJlZGl0OnJlYWQiLCJleHAiOjE2MTc1NDk1NTJ9.Ga7WqblSfgo6k2Ae5fDGRtpJRd6z9LP1O3ng18ltKdY');
     }
 
     /**
-     * Returns the seconds QuickPick menu and inserts the comments after choosing an item from the QuickPick
-     * @param id 
-     * @returns all resolved Promises
+     * Returns a showQuickPick with items fetched from Security Knowledge Framework API
+     * API endpoint: /api/checklist_category/items
      */
-    async getTypesFromCategoryById(id: number) {
-        const types: ChecklistType[] = [];
+    async categoriesQuickPick(): Promise<any> {
+      const categories: ChecklistCategory[] = [];
+      const data: any[] = await this._skf.getItemsFromUrl('/checklist_category/items');
 
-        for (const item of await this._skf.getChecklistTypes(id)) {
-            types.push(new ChecklistType(item.id, item.title))    
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          const item = data[key];
+
+          categories.push(new ChecklistCategory(item.id, item.name));
         }
+      }
 
-        return Promise.all(types)
-            .then(items => window.showQuickPick(items))
-            .then(async checklistItem => {
-                window.activeTextEditor!.insertSnippet(new SnippetString(`$LINE_COMMENT CHECKLIST ITEMS FOR - ${checklistItem!.label}\n`))
-                console.log(checklistItem)
+      return Promise.all(categories).then((items) => window.showQuickPick(items));
+    }
 
-                for (const item of await this._skf.getChecklistItems(checklistItem!.id)) {
-                    // console.log(`${item.checklist_items_id} ${item.checklist_items_content}`)
-                    window.activeTextEditor!.insertSnippet(new SnippetString(`$LINE_COMMENT ${item.checklist_items_id} ${item.checklist_items_content}\n`))
-                }
-                
-            })
+    /**
+     * Returns a showQuickPick with items fetched from Security Knowledge Framework API
+     * API endpoint:
+     * @param {number} id
+     */
+    async checklistTypesQickPick(id: number): Promise<any> {
+      const checklistTypes: ChecklistType[] = [];
+      const data: any[] = await this._skf.getTypesForCategoryWithId(id);
+
+      for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          const item = data[key];
+
+          checklistTypes.push(new ChecklistType(item.id, item.title));
+        }
+      }
+
+      return Promise.all(checklistTypes).then((items) => window.showQuickPick(items));
+    }
+
+    /**
+      * Fetches checklist items from Security Knowdledge Framework and inserts items as comments into activeTextEditor
+      * If no activeEditor is open, ShowErrorMessage will pop up
+      * @param {number} id
+      */
+    async onSelectChecklistTypeInsertComment(id: number): Promise<void> {
+      const editor: TextEditor | undefined = window.activeTextEditor;
+      const data: any[] = await this._skf.getChecklistItemsForTypeWithID(id);
+
+      if (!editor) {
+        window.showErrorMessage('Oops! Seems you do not have any Text Editors open');
+      } else {
+        data.forEach((item) => {
+          window.activeTextEditor!.insertSnippet(new SnippetString(`$LINE_COMMENT ${item.checklist_items_id}. ${item.checklist_items_content}\n`));
+        });
+
+        window.showInformationMessage('Checklist items have been fetched');
+      }
+    }
+
+    /**
+     *
+     */
+    run() {
+      this.categoriesQuickPick()
+          .then((category) => this.checklistTypesQickPick(category.id))
+          .then((types) => this.onSelectChecklistTypeInsertComment(types.id));
     }
 }
-
-export const skfQuickPick = new SKFQuickPick();
-

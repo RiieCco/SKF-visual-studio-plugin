@@ -1,15 +1,20 @@
-import { commands, ExtensionContext, window, workspace } from 'vscode';
-import { skfQuickPick } from './SKFQuickPick';
+import {commands, ExtensionContext} from 'vscode';
+import {SKFQuickPick} from './SKFQuickPick';
 
+
+const quickPick = new SKFQuickPick();
+
+/**
+ * Calls the run method of SKFQuickPick instance and will show the ShowQuickPick
+ * @param {ExtensionContext} context
+ */
 export function activate(context: ExtensionContext) {
+  const disposable = commands.registerCommand('skf.start', () => {
+    quickPick.run();
+  });
 
-	let disposable = commands.registerCommand('skf.start', () => {
-
-		skfQuickPick.categoriesQuickPick();
-
-	});
-
-	context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable);
 }
 
+// eslint-disable-next-line require-jsdoc
 export function deactivate() {}
