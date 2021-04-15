@@ -1,8 +1,10 @@
-import {commands, ExtensionContext} from 'vscode';
-import {SKFQuickPick} from './SKFQuickPick';
+/* eslint-disable max-len */
+import {commands, ExtensionContext, window} from 'vscode';
+import {categoryPicker, typePicker} from './picker';
+import {onSelectItemInsertComment} from './utils';
 
 
-const quickPick = new SKFQuickPick();
+// const quickPick = new SKFQuickPick();
 
 /**
  * Calls the run method of SKFQuickPick instance and will show the ShowQuickPick
@@ -10,7 +12,11 @@ const quickPick = new SKFQuickPick();
  */
 export function activate(context: ExtensionContext) {
   const disposable = commands.registerCommand('skf.start', () => {
-    quickPick.run();
+    categoryPicker()
+        .then((item) => typePicker(item!.id))
+        .then((types) => onSelectItemInsertComment(types!.id))
+        .finally(() => window.showInformationMessage('SKF QuickPick has been launched'))
+        .catch((err) => window.showErrorMessage(`Oops! Something went wrong.\n${err}`));
   });
 
   context.subscriptions.push(disposable);
