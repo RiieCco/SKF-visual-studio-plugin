@@ -8,13 +8,7 @@ import {FetchSKF} from './FetchSKF';
  * Fetches data from ./FetchSKF and shows as selection list in window.ShowQuickPick()
  */
 export class SKFQuickPick {
-    private _skf: FetchSKF;
-    /**
-     *
-     */
-    constructor() {
-      this._skf = new FetchSKF('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySWQiOjYyODQ5OSwiaWF0IjoxNjE3NTQyMzUyLCJwcml2aWxlZ2UiOiJlZGl0OnJlYWQiLCJleHAiOjE2MTc1NDk1NTJ9.Ga7WqblSfgo6k2Ae5fDGRtpJRd6z9LP1O3ng18ltKdY');
-    }
+    private static _skf: FetchSKF = new FetchSKF();
 
     /**
      * Returns a showQuickPick with items fetched from Security Knowledge Framework API
@@ -22,7 +16,7 @@ export class SKFQuickPick {
      */
     async categoriesQuickPick(): Promise<any> {
       const categories: ChecklistCategory[] = [];
-      const data: any[] = await this._skf.getItemsFromUrl('/checklist_category/items');
+      const data: any[] = await SKFQuickPick._skf.getItemsFromUrl('/checklist_category/items');
 
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -32,7 +26,7 @@ export class SKFQuickPick {
         }
       }
 
-      return Promise.all(categories).then((items) => window.showQuickPick(items));
+      return window.showQuickPick(categories);
     }
 
     /**
@@ -42,7 +36,7 @@ export class SKFQuickPick {
      */
     async checklistTypesQickPick(id: number): Promise<any> {
       const checklistTypes: ChecklistType[] = [];
-      const data: any[] = await this._skf.getTypesForCategoryWithId(id);
+      const data: any[] = await SKFQuickPick._skf.getTypesForCategoryWithId(id);
 
       for (const key in data) {
         if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -52,7 +46,7 @@ export class SKFQuickPick {
         }
       }
 
-      return Promise.all(checklistTypes).then((items) => window.showQuickPick(items));
+      return window.showQuickPick(checklistTypes);
     }
 
     /**
@@ -62,7 +56,7 @@ export class SKFQuickPick {
       */
     async onSelectChecklistTypeInsertComment(id: number): Promise<void> {
       const editor: TextEditor | undefined = window.activeTextEditor;
-      const data: any[] = await this._skf.getChecklistItemsForTypeWithID(id);
+      const data: any[] = await SKFQuickPick._skf.getChecklistItemsForTypeWithID(id);
 
       if (!editor) {
         window.showErrorMessage('Oops! Seems you do not have any Text Editors open');
@@ -76,7 +70,7 @@ export class SKFQuickPick {
     }
 
     /**
-     *
+     * calls the methods to show the quickpicks in correct order
      */
     run() {
       this.categoriesQuickPick()

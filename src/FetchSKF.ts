@@ -7,15 +7,7 @@ import fetch from 'node-fetch';
  */
 export class FetchSKF {
     private static readonly _baseAPIUrl: string = 'https://demo.securityknowledgeframework.org/api'
-    private _token: string;
-
-    /**
-     * constructor that takes the authorization token
-     * @param {string} token - an authorization token for Security Knowledge Framework API
-     */
-    constructor(token: string) {
-      this._token = token;
-    }
+    private static _token: string = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJVc2VySWQiOjYyODQ5OSwiaWF0IjoxNjE3NTQyMzUyLCJwcml2aWxlZ2UiOiJlZGl0OnJlYWQiLCJleHAiOjE2MTc1NDk1NTJ9.Ga7WqblSfgo6k2Ae5fDGRtpJRd6z9LP1O3ng18ltKdY';
 
     /**
      * Returns a json response or throw a new Error
@@ -40,7 +32,7 @@ export class FetchSKF {
      */
     async getItemsFromUrl(url: string): Promise<any> {
       const data = await this.getResponse(`${FetchSKF._baseAPIUrl}${url}`, {
-        headers: {'Authorization': this._token},
+        headers: {'Authorization': FetchSKF._token},
       });
 
       return data.items;
@@ -78,3 +70,5 @@ export class FetchSKF {
       return data;
     }
 }
+
+export const fetchSKF = new FetchSKF();
