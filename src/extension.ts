@@ -13,10 +13,9 @@ import {onSelectItemInsertComment} from './utils';
 export function activate(context: ExtensionContext) {
   const disposable = commands.registerCommand('skf.start', () => {
     categoryPicker()
-        .then((item) => typePicker(item!.id))
-        .then((types) => onSelectItemInsertComment(types!.id))
-        .finally(() => window.showInformationMessage('SKF QuickPick has been launched'))
-        .catch((err) => window.showErrorMessage(`Oops! Something went wrong.\n${err}`));
+        .then((item) => typePicker(item.id))
+        .then((item) => onSelectItemInsertComment(item.id))
+        .catch((err) => window.showErrorMessage(`Something went wrong.\n${err}`));
   });
 
   context.subscriptions.push(disposable);
