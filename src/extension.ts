@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import {commands, ExtensionContext, window} from 'vscode';
-import {getCategoryItems, getChecklistItems, getTypeItems} from './data';
+import {getCategoryItems, getTypeItems} from './data';
 import {onSelectInsertComment} from './utils';
 
 /**
@@ -13,7 +13,7 @@ export function activate(context: ExtensionContext) {
         .then((category: any) => getTypeItems(category!.id))
         .then((types: any) => window.showQuickPick(types))
         .then((type: any) => onSelectInsertComment(type.id))
-        .catch((err) => window.showErrorMessage(`Error: ${err}`));
+        .catch((err) => window.showErrorMessage(`${err}`));
   });
 
   context.subscriptions.push(disposable);

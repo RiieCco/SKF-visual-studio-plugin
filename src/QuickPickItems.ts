@@ -28,7 +28,6 @@ export class ChecklistType implements QuickPickItem {
     id: number;
     label: string;
     description?: string;
-    title: any;
 
     /**
      *

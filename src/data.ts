@@ -23,7 +23,7 @@ export const getItemsFromUrl = async (url: string): Promise<any> => {
 };
 
 /**
- *
+ * Fetches category items from '/api/checklist_category/items' and maps the result to an array of ChecklistCategory objects
  * @return {Promise<any>} - A promise that resolves to an array of ChecklistCategories;
  */
 export const getCategoryItems = async (): Promise<any> => {
